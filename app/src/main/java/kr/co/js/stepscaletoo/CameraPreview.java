@@ -2,9 +2,12 @@ package kr.co.js.stepscaletoo;
 
 import android.content.Context;
 import android.content.res.AssetFileDescriptor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.Pair;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import org.tensorflow.lite.Interpreter;
@@ -19,9 +22,12 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
+
+    private boolean isFirstFrame = true;
     private SurfaceHolder holder;
     private Camera camera;
     private Interpreter interpreter;
@@ -36,7 +42,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
 
 
-    private int getMaxIndex(float[] array) {
+    private Pair<Integer, Float> getMaxIndexAndValue(float[] array) {
         int maxIndex = 0;
         float maxValue = array[0];
         for (int i = 1; i < array.length; i++) {
@@ -45,7 +51,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
                 maxIndex = i;
             }
         }
-        return maxIndex;
+        return new Pair<>(maxIndex, maxValue);
     }
 
     @Override
@@ -72,26 +78,61 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     private void processFrame(byte[] data, int width, int height) {
         // TensorFlow 모델에 입력 데이터 전달
-        ByteBuffer inputBuffer = ByteBuffer.allocateDirect(width * height * 3); // 가정: RGB 이미지
+        ByteBuffer inputBuffer = preprocessInput(data, width, height);
         inputBuffer.order(ByteOrder.nativeOrder());
-        inputBuffer.put(data);
-        inputBuffer.rewind();
 
         int numClasses = 9;
+
         // 객체 분류 결과를 담을 버퍼
         float[][] output = new float[1][numClasses];
-        // 가정: numClasses는 분류할 객체의 클래스 개수
 
         // TensorFlow 모델 실행
         interpreter.run(inputBuffer, output);
 
         // 결과 처리
-        List<String> labels = loadLabels(context, "classes.txt");
-        String predictedClass = labels.get(getMaxIndex(output[0]));
+        Pair<Integer, Float> maxIndexAndValue = getMaxIndexAndValue(output[0]);
+        int predictedIndex = maxIndexAndValue.first;
+        float confidence = maxIndexAndValue.second;
 
-        // 처리된 결과를 사용하거나 반환할 수 있습니다.
-        // 예를 들어, 객체 인식 결과를 로그로 출력하거나 UI에 표시할 수 있습니다.
+        List<String> labels = loadLabels(context, "classes.txt");
+        String predictedClass = labels.get(predictedIndex);
+
         Log.d("Object Recognition", "Predicted Class: " + predictedClass);
+        Log.d("Object Recognition", "Confidence: " + confidence);
+        Log.d("Object Recognition", "Confidence: " + output[0][0]);
+    }
+
+    private ByteBuffer preprocessInput(byte[] data, int width, int height) {
+        int inputWidth = 224;// 입력 데이터의 가로 크기를 모델과 일치하도록 설정해야 합니다.
+        int inputHeight = 224;// 입력 데이터의 세로 크기를 모델과 일치하도록 설정해야 합니다.
+
+        // 중앙 부분을 중점으로 데이터를 잘라냅니다.
+        int left = (width - inputWidth) / 2;
+        int top = (height - inputHeight) / 2;
+        int right = left + inputWidth;
+        int bottom = top + inputHeight;
+
+        // 잘라낸 데이터를 새로운 배열에 복사합니다.
+        byte[] croppedData = new byte[inputWidth * inputHeight];
+        for (int row = top; row < bottom; row++) {
+            System.arraycopy(data, (row * width + left) * 3, croppedData, (row - top) * inputWidth, inputWidth);
+        }
+
+        ByteBuffer inputBuffer = ByteBuffer.allocateDirect(inputWidth * inputHeight * 3 * 4);
+        inputBuffer.order(ByteOrder.nativeOrder());
+
+        // 잘라낸 데이터를 복사합니다.
+        inputBuffer.put(croppedData);
+
+        return inputBuffer;
+    }
+
+
+    private float normalizePixelValue(byte[] data) {
+        // 입력 데이터를 정규화하는 작업을 수행
+        float pixelValue = (float) (data[0]);
+
+        return pixelValue;
     }
 
     private List<String> loadLabels(Context context, String labelsFileName) {
