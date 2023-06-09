@@ -1,0 +1,9 @@
+apple
+cabbage
+carrot
+egg
+potato
+strawberry
+sweet_potato
+tofu
+tomato
