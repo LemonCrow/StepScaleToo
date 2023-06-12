@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
@@ -189,14 +190,31 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         float probability = prediction.second;
 
         // Display the result
-        String result = "Class: " + className + "\nProbability: " + probability +
-                "\noutput[0][0]" + output[0][0] +
-                "\noutput[0][1]" + output[0][1] +
-                "\noutput[0][2]" + output[0][2] +
-                "\noutput[0][3]" + output[0][3] +
-                "\noutput[0][4]" + output[0][4];
-
+        String result = className;
+        int color = Color.BLACK;
+        if(result.equals("apple")){
+            result = "사과";
+            color = Color.rgb(255, 0, 0);
+        }
+        else if(result.equals("carrot")){
+            result = "당근";
+            color = Color.rgb(255, 165, 0);
+        }
+        else if(result.equals("potato")){
+            result = "감자";
+            color = Color.rgb(139, 69, 19);
+        }
+        else if(result.equals("strawberry")){
+            result = "딸기";
+            color = Color.rgb(220, 20, 60);
+        }
+        else if(result.equals("tomato")){
+            result = "토마토";
+            color = Color.rgb(255, 99, 71);
+        }
+        resultTextView.setTextSize(25);
         resultTextView.setText(result);
+        resultTextView.setTextColor(color);
     }
 
     private Pair<String, Float> findMaxClass(float[][] array) {
