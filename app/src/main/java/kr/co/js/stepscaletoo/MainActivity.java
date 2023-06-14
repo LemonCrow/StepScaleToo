@@ -3,16 +3,31 @@ package kr.co.js.stepscaletoo;
 import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.viewpager.widget.ViewPager;
+
+
+import com.google.android.material.bottomnavigation.BottomNavigationView;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private BottomNavigationView bottomNavigationView;
     private CameraPreview cameraPreview;
     private LinearLayout textViewContainer;
     private Button tagBtn;
@@ -21,11 +36,13 @@ public class MainActivity extends AppCompatActivity {
     private String text;
     private int[] isMake = {0, 0, 0, 0, 0};
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Context context = getApplicationContext();
+
 
 
         resultTextView = findViewById(R.id.resultTextView);
@@ -41,7 +58,10 @@ public class MainActivity extends AppCompatActivity {
                 tagTextView(context);
             }
         });
+
+
     }
+
 
     private void tagTextView(Context context){
         LinearLayout tagLinear = findViewById(R.id.tagLinear);
@@ -101,5 +121,6 @@ public class MainActivity extends AppCompatActivity {
             tagLinear.addView(textView);
         }
     }
+
 
 }

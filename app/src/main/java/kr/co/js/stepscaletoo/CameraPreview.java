@@ -53,24 +53,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
-        camera = Camera.open();
-
-        try {
-            camera.setPreviewDisplay(holder);
-            camera.startPreview();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        camera.setPreviewCallback(new Camera.PreviewCallback() {
-            @Override
-            public void onPreviewFrame(byte[] data, Camera camera) {
-                // 카메라 프레임 데이터 처리
-                Camera.Size previewSize = camera.getParameters().getPreviewSize();
-                Bitmap bitmap = convertToBitmap(data, previewSize.width, previewSize.height);
-                processImage(bitmap);
-            }
-        });
+        initCamera();
     }
 
     @Override
@@ -118,13 +101,44 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
-        camera.stopPreview();
-        camera.release();
+        if (camera != null) {
+            camera.setPreviewCallback(null);
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
 
         // TensorFlow Interpreter closure
         if (interpreter != null) {
             interpreter.close();
         }
+    }
+
+    private void initCamera() {
+        if (camera != null) {
+            camera.setPreviewCallback(null);
+            camera.stopPreview();
+            camera.release();
+            camera = null;
+        }
+        camera = Camera.open();
+
+        try {
+            camera.setPreviewDisplay(holder);
+            camera.startPreview();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        camera.setPreviewCallback(new Camera.PreviewCallback() {
+            @Override
+            public void onPreviewFrame(byte[] data, Camera camera) {
+                // 카메라 프레임 데이터 처리
+                Camera.Size previewSize = camera.getParameters().getPreviewSize();
+                Bitmap bitmap = convertToBitmap(data, previewSize.width, previewSize.height);
+                processImage(bitmap);
+            }
+        });
     }
 
     private MappedByteBuffer loadModelFile(Context context, String modelFileName) throws IOException {
@@ -204,59 +218,68 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             result = "감자";
             color = Color.rgb(139, 69, 19);
         }
-        else if(result.equals("strawberry")){
-            result = "딸기";
-            color = Color.rgb(220, 20, 60);
+        else if(result.equals("banana")){
+            result = "바나나";
+            color = Color.YELLOW;
         }
         else if(result.equals("tomato")){
             result = "토마토";
-            color = Color.rgb(255, 99, 71);
+            color = Color.RED;
         }
-        resultTextView.setTextSize(25);
-        resultTextView.setText(result);
-        resultTextView.setTextColor(color);
+        else{
+            result = "Unknown";
+        }
+
+        final String finalResult = result;
+        final int finalColor = color;
+        post(new Runnable() {
+            @Override
+            public void run() {
+                resultTextView.setText(finalResult);
+                resultTextView.setTextColor(finalColor);
+            }
+        });
     }
 
-    private Pair<String, Float> findMaxClass(float[][] array) {
-        int maxIndex = 0;
-        float maxValue = array[0][0];
-        for (int col = 1; col < array[0].length; col++) {
-            if (array[0][col] > maxValue) {
-                maxValue = array[0][col];
-                maxIndex = col;
+    private Pair<String, Float> findMaxClass(float[][] output) {
+        int maxIndex = -1;
+        float maxProbability = 0.0f;
+        for (int i = 0; i < classes.size(); i++) {
+            if (output[0][i] > maxProbability) {
+                maxIndex = i;
+                maxProbability = output[0][i];
             }
         }
         String className = classes.get(maxIndex);
-        float probability = maxValue;
-        return new Pair<>(className, probability);
+        return new Pair<>(className, maxProbability);
     }
 
     private Camera.Size getOptimalPreviewSize(List<Camera.Size> sizes, int width, int height) {
         final double ASPECT_TOLERANCE = 0.1;
         double targetRatio = (double) width / height;
+        if (sizes == null) return null;
 
         Camera.Size optimalSize = null;
         double minDiff = Double.MAX_VALUE;
 
+        int targetHeight = height;
+
         for (Camera.Size size : sizes) {
             double ratio = (double) size.width / size.height;
-            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE)
-                continue;
+            if (Math.abs(ratio - targetRatio) > ASPECT_TOLERANCE) continue;
 
-            double diff = Math.abs(size.height - height);
-            if (diff < minDiff) {
+            if (Math.abs(size.height - targetHeight) < minDiff) {
                 optimalSize = size;
-                minDiff = diff;
+                minDiff = Math.abs(size.height - targetHeight);
             }
         }
 
         if (optimalSize == null) {
             minDiff = Double.MAX_VALUE;
             for (Camera.Size size : sizes) {
-                double diff = Math.abs(size.height - height);
-                if (diff < minDiff) {
+                if (Math.abs(size.height - targetHeight) < minDiff) {
                     optimalSize = size;
-                    minDiff = diff;
+                    minDiff = Math.abs(size.height - targetHeight);
                 }
             }
         }
@@ -264,4 +287,3 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         return optimalSize;
     }
 }
-
