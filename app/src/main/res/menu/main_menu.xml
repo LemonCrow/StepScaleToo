@@ -1,4 +1,5 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
         android:id="@+id/menu_item_page1"
         android:title="Page 1"
@@ -11,4 +12,5 @@
         android:id="@+id/menu_item_page2"
         android:title="Page 2"
         android:icon="@android:drawable/ic_menu_add" />
+
 </menu>
