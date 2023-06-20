@@ -1,6 +1,7 @@
 package kr.co.js.stepscaletoo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -56,6 +57,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 tagTextView(context);
+            }
+        });
+
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView.setSelectedItemId(R.id.menu_item_main);
+        bottomNavigationView.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.menu_item_page1:
+                        startActivity(new Intent(MainActivity.this, ActivityTraining.class));
+                        finish();
+                        break;
+                    case R.id.menu_item_main:
+                        break;
+                    case R.id.menu_item_page2:
+                        startActivity(new Intent(MainActivity.this, ActivityStatics.class));
+                        finish();
+                        break;
+                }
+                return true;
             }
         });
 
