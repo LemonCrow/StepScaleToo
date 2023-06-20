@@ -14,10 +14,23 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/textViewDaily"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Page2" />
+            android:text="Daily: " />
+
+        <TextView
+            android:id="@+id/textViewMonthly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Monthly: " />
+
+        <TextView
+            android:id="@+id/textViewYearly"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Yearly: " />
+
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

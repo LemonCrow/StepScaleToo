@@ -14,10 +14,35 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textView"
-            android:layout_width="match_parent"
+            android:id="@+id/textViewTime"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Page1" />
+            android:text="Time: " />
+
+        <TextView
+            android:id="@+id/textViewDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Distance: " />
+
+        <TextView
+            android:id="@+id/textViewSpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Speed: " />
+
+        <TextView
+            android:id="@+id/textViewCalories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Calories: " />
+
+        <ImageButton
+            android:id="@+id/startStopButton"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/start_image" />
     </LinearLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

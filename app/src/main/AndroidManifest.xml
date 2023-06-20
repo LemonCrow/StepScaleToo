@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 
     <application
         android:allowBackup="true"
@@ -13,9 +15,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StepScaleToo"
         tools:targetApi="31">
-        <activity
-            android:name=".SharedFragment"
-            android:exported="false" />
         <activity
             android:name=".ActivityTraining"
             android:exported="false" />
